@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GlassTech Pro - Automated CAD & Factory Ledger</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <header class="navbar">
+        <div class="logo">⚙️ GlassTech <span>Factory ERP & CAD</span></div>
+        <nav>
+            <a href="#cad-generator">Auto CAD Generator</a>
+            <a href="#ledger">Business Ledger & Excel</a>
+            <a href="#chatbot">AI Assistant</a>
+        </nav>
+    </header>
+
+    <!-- Automated Vector Design Engine -->
+    <section id="cad-generator" class="container dark-section">
+        <h2>⚡ CorelDraw & AutoCAD Automatic Vector Studio</h2>
+        <p>No operator required! Choose interior glass design, select units (Inches/Feet/MM), and instant vector cutlines will be generated.</p>
+        
+        <div class="designer-layout">
+            <div class="form-box">
+                <div class="form-group">
+                    <label>Design Pattern Style:</label>
+                    <select id="cadPattern" onchange="updateCanvas()">
+                        <option value="vgroove_diamond">V-Groove Diamond Grid </option>
+                        <option value="bevel_grid">Beveled Multi-Panel Wall Grid </option>
+                        <option value="chevron_slant">Chevron / Slanted Staggered </option>
+                        <option value="vgroove_arc">V-Groove Geometric Arc Grid </option>
+                    </select>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Measurement Unit:</label>
+                        <select id="cadUnit" onchange="updateCanvas()">
+                            <option value="inch">Inches (in)</option>
+                            <option value="mm" selected>Millimeters (mm)</option>
+                            <option value="feet">Feet (ft)</option>
+                            <option value="cm">Centimeters (cm)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Overall Width:</label>
+                        <input type="number" id="cadWidth" value="72" oninput="updateCanvas()">
+                    </div>
+                    <div class="form-group">
+                        <label>Overall Height:</label>
+                        <input type="number" id="cadHeight" value="96" oninput="updateCanvas()">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Columns / Grid X:</label>
+                        <input type="number" id="cadCols" value="4" min="1" max="20" oninput="updateCanvas()">
+                    </div>
+                    <div class="form-group">
+                        <label>Rows / Grid Y:</label>
+                        <input type="number" id="cadRows" value="4" min="1" max="20" oninput="updateCanvas()">
+                    </div>
+                    <div class="form-group">
+                        <label>Bevel/Groove Size:</label>
+                        <input type="number" id="cadBevel" value="1.5" oninput="updateCanvas()">
+                    </div>
+                </div>
+
+                <button class="btn-primary" onclick="downloadDXF()">⬇️ Download AutoCAD (.DXF) / Corel File</button>
+            </div>
+
+            <!-- Live Canvas Vector Preview -->
+            <div class="preview-box">
+                <h4>Dynamic 2D Vector Blueprint Preview</h4>
+                <canvas id="blueprintCanvas" width="380" height="420"></canvas>
+            </div>
+        </div>
+    </section>
+
+    <!-- Excel Ledger Section -->
+    <section id="ledger" class="container">
+        <div class="section-header">
+            <h2>📊 Factory Orders & Shopkeeper Payment Records</h2>
+            <div>
+                <a href="/api/export-excel" class="btn-excel">📥 Export to Excel (.xlsx)</a>
+                <button class="btn-secondary" onclick="openOrderModal()">+ Add New Order</button>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="ledger-table">
+                <thead>
+                    <tr>
+                        <th>Order ID</th>
+                        <th>Customer</th>
+                        <th>Shopkeeper / Merchant</th>
+                        <th>Glass/Mirror Type</th>
+                        <th>Dimensions</th>
+                        <th>Sent Date</th>
+                        <th>Rec. Date</th>
+                        <th>Status</th>
+                        <th>Total Amt</th>
+                        <th>Pending Amt</th>
+                    </tr>
+                </thead>
+                <tbody id="ledgerBody"></tbody>
+            </table>
+        </div>
+    </section>
+
+    <!-- AI Chatbot -->
+    <section id="chatbot" class="container dark-section">
+        <h2>🤖 Glass Factory Assistant</h2>
+        <div class="chat-container">
+            <div class="chat-logs" id="chatLogs">
+                <div class="chat-msg bot">Welcome! Ask me anything about V-Groove Mirrors, Beveled Glass, or Order Exports.</div>
+            </div>
+            <div class="chat-input-area">
+                <input type="text" id="userInput" placeholder="Ask about V-Groove, Inches conversion, Pending payments...">
+                <button onclick="sendChatMessage()">Send</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Order Modal -->
+    <div id="orderModal" class="modal">
+        <div class="modal-content">
+            <h3>Register New Order</h3>
+            <input type="text" id="mCustName" placeholder="Customer Name">
+            <input type="text" id="mShopName" placeholder="Shopkeeper / Merchant Name">
+            <input type="text" id="mShopDetail" placeholder="Shop Address / Location">
+            <select id="mGlassType">
+                <option value="V-Groove Diamond Mirror">V-Groove Diamond Mirror</option>
+                <option value="Beveled Wall Paneling Glass">Beveled Wall Paneling Glass</option>
+                <option value="Toughened Glass 12mm">Toughened Glass 12mm</option>
+                <option value="Laminated Safety Glass">Laminated Safety Glass</option>
+            </select>
+            <div class="form-row">
+                <input type="number" id="mWidth" placeholder="Width">
+                <input type="number" id="mHeight" placeholder="Height">
+                <select id="mUnit">
+                    <option value="inch">Inches</option>
+                    <option value="mm">MM</option>
+                    <option value="feet">Feet</option>
+                </select>
+            </div>
+            <input type="number" id="mAmt" placeholder="Total Order Amount (₹)">
+            <input type="number" id="mPendingAmt" placeholder="Pending Payment (₹)">
+            <div class="modal-actions">
+                <button class="btn-primary" onclick="submitOrder()">Save Order</button>
+                <button class="btn-danger" onclick="closeOrderModal()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function updateCanvas() {
+            const canvas = document.getElementById('blueprintCanvas');
+            const ctx = canvas.getContext('2d');
+            
+            const unit = document.getElementById('cadUnit').value;
+            const rawW = parseFloat(document.getElementById('cadWidth').value) || 72;
+            const rawH = parseFloat(document.getElementById('cadHeight').value) || 96;
+            const cols = parseInt(document.getElementById('cadCols').value) || 4;
+            const rows = parseInt(document.getElementById('cadRows').value) || 4;
+            const pattern = document.getElementById('cadPattern').value;
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = "#ffffff";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            const padding = 45;
+            const maxW = canvas.width - (padding * 2);
+            const maxH = canvas.height - (padding * 2);
+            const scale = Math.min(maxW / rawW, maxH / rawH);
+
+            const drawW = rawW * scale;
+            const drawH = rawH * scale;
+            const startX = (canvas.width - drawW) / 2;
+            const startY = (canvas.height - drawH) / 2;
+
+            // Outer Boundary Line (Red = Cut)
+            ctx.strokeStyle = "#dc2626";
+            ctx.lineWidth = 2;
+            ctx.strokeRect(startX, startY, drawW, drawH);
+
+            ctx.strokeStyle = "#ca8a04"; // Yellow/Orange = Engrave
+            ctx.lineWidth = 1;
+
+            if (pattern === 'vgroove_diamond') {
+                const stepX = drawW / cols;
+                const stepY = drawH / rows;
+
+                for (let i = 0; i <= cols + rows; i++) {
+                    ctx.beginPath();
+                    ctx.moveTo(startX, startY + (i * stepY));
+                    ctx.lineTo(startX + (i * stepX), startY);
+                    ctx.stroke();
+
+                    ctx.beginPath();
+                    ctx.moveTo(startX, startY + drawH - (i * stepY));
+                    ctx.lineTo(startX + (i * stepX), startY + drawH);
+                    ctx.stroke();
+                }
+
+            } else if (pattern === 'chevron_slant') {
+                const colW = drawW / cols;
+                const stepY = drawH / rows;
+
+                for (let c = 1; c < cols; c++) {
+                    ctx.beginPath();
+                    ctx.moveTo(startX + (c * colW), startY);
+                    ctx.lineTo(startX + (c * colW), startY + drawH);
+                    ctx.stroke();
+                }
+
+                for (let c = 0; c < cols; c++) {
+                    let xL = startX + (c * colW);
+                    let xR = startX + ((c + 1) * colW);
+                    for (let r = 0; r <= rows; r++) {
+                        let yBase = startY + (r * stepY);
+                        let yOff = yBase + (c % 2 === 0 ? stepY * 0.4 : -stepY * 0.4);
+                        ctx.beginPath();
+                        ctx.moveTo(xL, Math.max(startY, Math.min(startY + drawH, yBase)));
+                        ctx.lineTo(xR, Math.max(startY, Math.min(startY + drawH, yOff)));
+                        ctx.stroke();
+                    }
+                }
+                
+
+            } else if (pattern === 'bevel_grid') {
+                const cellW = drawW / cols;
+                const cellH = drawH / rows;
+                for (let r = 0; r < rows; r++) {
+                    for (let c = 0; c < cols; c++) {
+                        let cx = startX + (c * cellW);
+                        let cy = startY + (r * cellH);
+                        ctx.strokeRect(cx, cy, cellW, cellH);
+                        ctx.strokeRect(cx + 8, cy + 8, cellW - 16, cellH - 16);
+                    }
+                }
+            }
+
+            // Dimension Overlay
+            ctx.fillStyle = "#dc2626";
+            ctx.font = "11px Inter";
+            ctx.fillText(`${rawW} ${unit}`, startX + (drawW / 2) - 15, startY - 10);
+            ctx.fillText(`${rawH} ${unit}`, startX + drawW + 6, startY + (drawH / 2));
+        }
+
+        async function downloadDXF() {
+            const payload = {
+                unit: document.getElementById('cadUnit').value,
+                width: document.getElementById('cadWidth').value,
+                height: document.getElementById('cadHeight').value,
+                pattern: document.getElementById('cadPattern').value,
+                cols: document.getElementById('cadCols').value,
+                rows: document.getElementById('cadRows').value,
+                bevel: document.getElementById('cadBevel').value
+            };
+
+            const response = await fetch('/api/generate-cad', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            if (response.ok) {
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `Glass_CNC_${payload.pattern}_${payload.width}x${payload.height}${payload.unit}.dxf`;
+                a.click();
+            }
+        }
+
+        async function loadLedger() {
+            const res = await fetch('/api/orders');
+            const data = await res.json();
+            const tbody = document.getElementById('ledgerBody');
+            tbody.innerHTML = '';
+
+            data.forEach(order => {
+                const statusBadge = order.status === 'Done' ? 'badge-success' : 'badge-warning';
+                const row = `
+                    <tr>
+                        <td><b>${order.id}</b></td>
+                        <td>${order.customer_name}</td>
+                        <td><b>${order.shopkeeper_name}</b><br><small>${order.shop_detail}</small></td>
+                        <td>${order.glass_type}</td>
+                        <td>${order.dimensions}</td>
+                        <td>${order.sent_date}</td>
+                        <td>${order.rec_date}</td>
+                        <td><span class="badge ${statusBadge}">${order.status}</span></td>
+                        <td>₹${order.total_amount}</td>
+                        <td class="text-danger"><b>₹${order.pending_payment}</b></td>
+                    </tr>
+                `;
+                tbody.innerHTML += row;
+            });
+        }
+
+        function openOrderModal() { document.getElementById('orderModal').style.display = 'flex'; }
+        function closeOrderModal() { document.getElementById('orderModal').style.display = 'none'; }
+
+        async function submitOrder() {
+            const payload = {
+                customer_name: document.getElementById('mCustName').value,
+                shopkeeper_name: document.getElementById('mShopName').value,
+                shop_detail: document.getElementById('mShopDetail').value,
+                glass_type: document.getElementById('mGlassType').value,
+                width: document.getElementById('mWidth').value,
+                height: document.getElementById('mHeight').value,
+                unit: document.getElementById('mUnit').value,
+                amount: document.getElementById('mAmt').value,
+                pending_amount: document.getElementById('mPendingAmt').value
+            };
+
+            await fetch('/api/add-order', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            closeOrderModal();
+            loadLedger();
+        }
+
+        async function sendChatMessage() {
+            const input = document.getElementById('userInput');
+            const text = input.value.trim();
+            if (!text) return;
+
+            const logs = document.getElementById('chatLogs');
+            logs.innerHTML += `<div class="chat-msg user">${text}</div>`;
+            input.value = '';
+
+            const res = await fetch('/api/chatbot', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message: text })
+            });
+            const data = await res.json();
+            logs.innerHTML += `<div class="chat-msg bot">${data.reply}</div>`;
+            logs.scrollTop = logs.scrollHeight;
+        }
+
+        window.onload = () => {
+            updateCanvas();
+            loadLedger();
+        };
+    </script>
+</body>
+</html>
